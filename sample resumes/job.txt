@@ -1,0 +1,12 @@
+🧑‍💻 Frontend Developer - React.js
+We are seeking a skilled Frontend Developer with at least 2+ years of experience in React.js, JavaScript, HTML, and CSS. Knowledge of Redux, REST APIs, and responsive design is essential. Experience with Git, TypeScript, and Webpack is a plus. Excellent problem-solving and UI design skills are required.
+
+☁️ Cloud Engineer - AWS Focus
+Looking for a Cloud Engineer with 3+ years of experience in AWS services like EC2, S3, Lambda, and CloudFormation. Candidates should have expertise in CI/CD pipelines, Docker, Terraform, and scripting (Python/Bash). AWS Certification is a bonus.
+
+📊 Data Analyst
+We're hiring a Data Analyst with strong SQL, Excel, and experience in data visualization tools like Tableau or Power BI. A good understanding of data cleaning, ETL processes, and basic Python or R scripting is expected. Minimum 1 year of experience required.
+
+🧑‍🏫 HR Executive
+This position reports to the HR Director and requires 2+ years of experience in employee engagement, recruitment, performance management, and HR compliance. Familiarity with HRMS software, strong communication skills, and the ability to handle confidential information is essential.
+

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Ranker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <link rel = "stylesheet" href = "./styles.css">
+</head>
+<body>
+  <h1>Resume Ranker</h1>
+
+  <div class="drop-zone" id="dropZone">
+    <p>Drag & drop PDF resumes here or click to upload</p>
+    <input type="file" id="fileInput" multiple accept="application/pdf" style="display:none;">
+  </div>
+  <div id="progressBar"><div></div></div>
+
+  <h2>Job Description</h2>
+  <textarea class="job-desc" id="jobDesc" placeholder="Paste job description here..."></textarea>
+  <button id="analyzeBtn">Analyze Job Description</button>
+  <div id="keywordsContainer"></div>
+
+  <h2>Ranked Candidates</h2>
+  <table id="results">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Score</th>
+        <th>Experience</th>
+        <th>Skills Match</th>
+      </tr>
+    </thead>
+    <tbody id="resultsBody"></tbody>
+  </table>
+  <button id="downloadBtn" onclick="downloadCSV()">Download as CSV</button>
+
+  <script src = "./script.js">
+    // Set PDF.js worker path
+
+  </script>
+</body>
+</html>
