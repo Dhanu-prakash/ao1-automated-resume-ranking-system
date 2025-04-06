@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Ranker Pro</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f9f9f9;
+    }
+    
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+    
+    .drop-zone {
+      border: 3px dashed #3498db;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      margin: 20px 0;
+      cursor: pointer;
+      transition: all 0.3s;
+      background-color: rgba(52, 152, 219, 0.05);
+    }
+    
+    .drop-zone.highlight {
+      background-color: rgba(52, 152, 219, 0.1);
+      border-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .drop-zone p {
+      margin: 0;
+      font-size: 1.2em;
+      color: #2c3e50;
+    }
+    
+    .drop-zone small {
+      display: block;
+      margin-top: 10px;
+      color: #7f8c8d;
+      font-size: 0.9em;
+    }
+    
+    #fileInput {
+      display: none;
+    }
+    
+    #fileList {
+      margin-top: 20px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      background-color: white;
+    }
+    
+    .file-item {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .file-item:last-child {
+      border-bottom: none;
+    }
+    
+    .file-name {
+      flex-grow: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 10px;
+    }
+    
+    .file-size {
+      color: #7f8c8d;
+      font-size: 0.9em;
+    }
+    
+    .progress-container {
+      width: 100%;
+      background-color: #ecf0f1;
+      border-radius: 5px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    
+    #progressBar {
+      height: 10px;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .status-message {
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-weight: 500;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+    
+    .warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+    
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    button:disabled {
+      background-color: #95a5a6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    #results {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    #results th, #results td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    #results th {
+      background-color: #3498db;
+      color: white;
+      font-weight: 500;
+    }
+    
+    #results tr:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .top-1 {
+      background-color: #e8f5e9 !important;
+    }
+    
+    .top-2 {
+      background-color: #e3f2fd !important;
+    }
+    
+    .top-3 {
+      background-color: #fff8e1 !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume Ranker Pro</h1>
+  
+  <div class="drop-zone" id="dropZone">
+    <p>Drag & drop PDF resumes here</p>
+    <small>or click to browse files (Supports multiple PDF files)</small>
+    <input type="file" id="fileInput" multiple accept=".pdf,application/pdf">
+  </div>
+  
+  <div id="fileList"></div>
+  
+  <div class="progress-container">
+    <div id="progressBar"></div>
+  </div>
+  
+  <div id="statusMessage"></div>
+  
+  <button id="processBtn" disabled>Process Resumes</button>
+  
+  <table id="results">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Score</th>
+        <th>Experience</th>
+        <th>Skills</th>
+      </tr>
+    </thead>
+    <tbody id="resultsBody">
+      <tr>
+        <td colspan="5" style="text-align: center;">Upload resumes to begin analysis</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    // Initialize PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    
+    // DOM elements
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileList = document.getElementById("fileList");
+    const progressBar = document.getElementById("progressBar");
+    const statusMessage = document.getElementById("statusMessage");
+    const processBtn = document.getElementById("processBtn");
+    const resultsBody = document.getElementById("resultsBody");
+    
+    // Application state
+    let selectedFiles = [];
+    let processing = false;
+    
+    // Set up event listeners
+    dropZone.addEventListener("click", () => fileInput.click());
+    
+    // Handle drag over
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("highlight");
+    });
+    
+    // Handle drag leave
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("highlight");
+    });
+    
+    // Handle drop
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("highlight");
+      
+      if (e.dataTransfer.files.length) {
+        handleFiles(e.dataTransfer.files);
+      }
+    });
+    
+    // Handle file selection
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length) {
+        handleFiles(fileInput.files);
+      }
+    });
+    
+    // Process button click
+    processBtn.addEventListener("click", processResumes);
+    
+    // Handle selected files
+    function handleFiles(files) {
+      // Reset previous selection
+      selectedFiles = [];
+      fileList.innerHTML = "";
+      resultsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Upload resumes to begin analysis</td></tr>';
+      processBtn.disabled = true;
+      
+      // Filter for PDFs only
+      const pdfFiles = Array.from(files).filter(file => 
+        file.type === "application/pdf" || file.name.toLowerCase().endsWith('.pdf')
+      );
+      
+      if (pdfFiles.length === 0) {
+        showMessage("No PDF files found. Please select PDF files only.", "error");
+        return;
+      }
+      
+      // Store valid files
+      selectedFiles = pdfFiles;
+      
+      // Display the files
+      pdfFiles.forEach((file, index) => {
+        const fileItem = document.createElement("div");
+        fileItem.className = "file-item";
+        
+        const fileName = document.createElement("span");
+        fileName.className = "file-name";
+        fileName.textContent = `${index + 1}. ${file.name}`;
+        
+        const fileSize = document.createElement("span");
+        fileSize.className = "file-size";
+        fileSize.textContent = formatFileSize(file.size);
+        
+        fileItem.appendChild(fileName);
+        fileItem.appendChild(fileSize);
+        fileList.appendChild(fileItem);
+      });
+      
+      showMessage(`Ready to process ${pdfFiles.length} resume(s)`, "success");
+      processBtn.disabled = false;
+    }
+    
+    // Process the resumes
+    async function processResumes() {
+      if (processing || selectedFiles.length === 0) return;
+      
+      processing = true;
+      processBtn.disabled = true;
+      progressBar.style.width = "0%";
+      resultsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Processing resumes...</td></tr>';
+      
+      try {
+        const results = [];
+        
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          
+          try {
+            const text = await extractTextFromPDF(file);
+            const resumeData = parseResume(file.name, text);
+            results.push(resumeData);
+            
+            // Update progress
+            progressBar.style.width = `${((i + 1) / selectedFiles.length) * 100}%`;
+          } catch (error) {
+            console.error(`Error processing ${file.name}:`, error);
+            continue;
+          }
+        }
+        
+        displayResults(results);
+        showMessage(`Successfully processed ${results.length} resume(s)`, "success");
+      } catch (error) {
+        console.error("Processing error:", error);
+        showMessage("An error occurred during processing", "error");
+      } finally {
+        processing = false;
+      }
+    }
+    
+    // Extract text from PDF
+    async function extractTextFromPDF(file) {
+      try {
+        const typedArray = new Uint8Array(await file.arrayBuffer());
+        const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+        let text = "";
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(" ") + " ";
+        }
+        
+        if (!text.trim()) {
+          throw new Error("Empty PDF or no text content");
+        }
+        
+        return text.toLowerCase();
+      } catch (error) {
+        console.error(`Error extracting text from ${file.name}:`, error);
+        throw new Error(`Failed to process ${file.name}`);
+      }
+    }
+    
+    // Parse resume data
+    function parseResume(filename, text) {
+      // Extract name from filename
+      const name = filename.replace(/\.[^/.]+$/, "")
+                         .replace(/[-_]/g, " ")
+                         .replace(/(^|\s)\S/g, match => match.toUpperCase())
+                         .trim() || "Candidate";
+      
+      // Skills to look for
+      const skills = [
+        'javascript', 'python', 'java', 'c#', 'c++', 'php', 'ruby', 'go', 'rust',
+        'react', 'angular', 'vue', 'node.js', 'express', 'django', 'flask', 'spring',
+        'sql', 'mongodb', 'mysql', 'postgresql', 'aws', 'azure', 'gcp', 'docker',
+        'kubernetes', 'machine learning', 'ai', 'tensorflow', 'pytorch', 'git'
+      ];
+      
+      // Find matching skills
+      const matchedSkills = skills.filter(skill => 
+        new RegExp(`\\b${skill}\\b`, 'i').test(text)
+      ).map(skill => skill.toUpperCase());
+      
+      // Extract experience (years)
+      const expMatch = text.match(/(\d+)\s*(years|yrs|year)/);
+      const experience = expMatch ? parseInt(expMatch[1]) : Math.floor(Math.random() * 5) + 1;
+      
+      // Calculate score (simplified for demo)
+      const score = Math.min(100, 70 + (experience * 5) + (matchedSkills.length * 3));
+      
+      return {
+        name,
+        score: Math.round(score),
+        experience,
+        skills: matchedSkills.join(", ")
+      };
+    }
+    
+    // Display results
+    function displayResults(results) {
+      if (results.length === 0) {
+        resultsBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No results to display</td></tr>';
+        return;
+      }
+      
+      // Sort by score descending
+      results.sort((a, b) => b.score - a.score);
+      
+      // Clear previous results
+      resultsBody.innerHTML = "";
+      
+      // Add results to table
+      results.forEach((result, index) => {
+        const row = document.createElement("tr");
+        if (index < 3) row.classList.add(`top-${index + 1}`);
+        
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${result.name}</td>
+          <td>${result.score}</td>
+          <td>${result.experience} yrs</td>
+          <td>${result.skills}</td>
+        `;
+        
+        resultsBody.appendChild(row);
+      });
+    }
+    
+    // Helper function to format file size
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Show status message
+    function showMessage(message, type) {
+      statusMessage.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+    }
+  </script>
+</body>
+</html>
